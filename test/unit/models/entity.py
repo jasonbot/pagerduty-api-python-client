@@ -50,6 +50,14 @@ class EntityTestCase(unittest.TestCase):
         class TestEntity(Entity):
             endpoint = self.endpoint
 
+            @staticmethod
+            def validate(new_data):
+                allowed_keys = {'id', 'other_thing'}
+
+                for key in new_data:
+                    if key not in allowed_keys:
+                        raise ValueError("Invalid new key: %s" % key)
+
         self.cls = TestEntity
 
     def test_sanitize_endpoint(self):
@@ -354,6 +362,14 @@ class EntityTestCase(unittest.TestCase):
                 for request in m.request_history)
         )
 
+    @requests_mock.Mocker()
+    def test_update(self, m):
+        entity = self.cls()
+        entity._set({'id': 'OLDID'})
+        entity['id'] = 'ENTTEST'
+        entity['other_thing'] = 'Other thing to set'
+        with self.assertRaises(ValueError):
+            entity['bad_key'] = 'hello'
 
 if __name__ == '__main__':
     unittest.main()
