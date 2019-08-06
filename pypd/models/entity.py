@@ -6,7 +6,6 @@ Entity module provides a base class Entity for defining a PagerDuty entity.
 Entities should be used as the base for all things that ought to be queryable
 via PagerDuty v2 API.
 """
-import copy
 import json
 import re
 
@@ -559,8 +558,10 @@ class Entity(ClientMixin):
 
     def __setitem__(self, attr, value):
         """Attribute accessor method in dict-like fashion."""
+        # Make a shallow copy of data and validate, if the entity
+        # has the corresponding method.
         if hasattr(self, 'validate'):
-            new_data = copy.deepcopy(self._data)
+            new_data = self._data.copy()
             new_data[attr] = value
             self.validate(new_data)
             self._set(new_data)
