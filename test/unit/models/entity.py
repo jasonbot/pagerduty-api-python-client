@@ -362,8 +362,7 @@ class EntityTestCase(unittest.TestCase):
                 for request in m.request_history)
         )
 
-    @requests_mock.Mocker()
-    def test_update(self, m):
+    def test_update(self):
         entity = self.cls()
         entity._set({'id': 'OLDID'})
         entity['id'] = 'ENTTEST'
