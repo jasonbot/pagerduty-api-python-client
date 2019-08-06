@@ -327,29 +327,28 @@ class EntityTestCase(unittest.TestCase):
 
     @requests_mock.Mocker()
     def test_save(self, m):
-        item_id = "ENT01"
+        item_id = 'ENT01'
 
         item_record = {
-            "id": item_id
+            'id': item_id
         }
 
-        parse_key = (self.cls.sanitize_ep(self.cls.get_endpoint(), plural=False))
+        parse_key = (self.cls.sanitize_ep(self.cls.get_endpoint(),
+                                          plural=False))
 
         data = {
             parse_key: item_record
         }
 
-        entity_url = "{url}/{id}".format(url=self.url, id=item_id)
-
-        def update_record(request, context):
-            return data
+        entity_url = '{url}/{id}'.format(url=self.url, id=item_id)
 
         m.register_uri('GET', entity_url, json=data)
-        m.register_uri('PUT', entity_url, json=update_record)
+        m.register_uri('PUT', entity_url, json=data)
 
-        entity = self.cls.fetch(id="ENT01")
+        entity = self.cls.fetch(id='ENT01')
         entity.save()
 
+        # Make sure PUT endpoint is called
         self.assertTrue(
             any((entity_url, 'PUT') == (request.url, request.method)
                 for request in m.request_history)
