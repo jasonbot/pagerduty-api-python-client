@@ -440,8 +440,8 @@ class Entity(ClientMixin):
             return None
 
     @classmethod
-    def create(cls, data=None, api_key=None, endpoint=None, add_headers=None,
-               data_key=None, response_data_key=None, method='POST', **kwargs):
+    def post(cls, data=None, api_key=None, endpoint=None, add_headers=None,
+             data_key=None, response_data_key=None, method='POST', **kwargs):
         """
         Create an instance of the Entity model by calling to the API endpoint.
 
@@ -475,7 +475,7 @@ class Entity(ClientMixin):
         return inst
 
     # sugar-pills
-    post = create
+    create = post
 
     @classmethod
     def delete(cls, id, api_key=None, **kwargs):
@@ -487,11 +487,16 @@ class Entity(ClientMixin):
         return True
 
     @classmethod
-    def put(cls, id, api_key=None, **kwargs):
-        """Delete an entity from the server by ID."""
-        inst = cls(api_key=api_key)
-        endpoint = '/'.join((cls.get_endpoint(), id))
-        return inst.request('PUT', endpoint=endpoint, query_params=kwargs)
+    def put(cls, id=None, data=None, api_key=None, endpoint=None):
+        """
+        Use the .create method's smarts to update an existing record
+        """
+        if id and not endpoint:
+            endpoint = '/'.join((cls.get_endpoint(), id))
+        return cls.post(data=data,
+                        api_key=api_key,
+                        endpoint=endpoint,
+                        method="PUT")
 
     @classmethod
     def _parse(cls, data, key=None):
@@ -535,9 +540,13 @@ class Entity(ClientMixin):
         """
         return self._data
 
+    def save(self):
+        """Update the server record with this record's data."""
+        return self.put(id=self.id, data=self._data)
+
     def remove(self):
         """Delete this instance from server record."""
-        return self.__class__.delete(self.id)
+        return self.delete(self.id)
 
     def __getitem__(self, attr):
         """Attribute accessor method in dict-like fashion."""
